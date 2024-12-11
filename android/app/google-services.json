@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "263626630431",
+    "firebase_url": "https://juegomoviles-a6162-default-rtdb.firebaseio.com",
+    "project_id": "juegomoviles-a6162",
+    "storage_bucket": "juegomoviles-a6162.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263626630431:android:aa8d498432e0e9a4077c2a",
+        "android_client_info": {
+          "package_name": "com.example.app_netflix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsxvkiFAZ-HTxtsj8DWWpXOKD4UvR9wDY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
