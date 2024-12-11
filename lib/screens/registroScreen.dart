@@ -1,3 +1,4 @@
+import 'package:app_netflix/screens/loginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -158,7 +159,11 @@ class registroScreen extends StatelessWidget {
                       SizedBox(height: 20),
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(context); // Regresar al login
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      loginScreen())); // Regresar al login
                         },
                         child: Text(
                           "¿Ya tienes una cuenta? Inicia Sesión",
