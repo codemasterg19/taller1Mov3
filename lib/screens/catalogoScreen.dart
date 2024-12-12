@@ -1,28 +1,33 @@
+import 'package:app_netflix/screens/registroPeliculasScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class CatalogoScreen extends StatelessWidget {
   const CatalogoScreen({super.key});
 
+  Stream<List<Map<String, dynamic>>> leerEnTiempoReal() {
+    DatabaseReference ref = FirebaseDatabase.instance.ref('peliculas/');
+    return ref.onValue.map((event) {
+      final data = event.snapshot.value;
+      if (data != null) {
+        Map<dynamic, dynamic> mapData = data as Map<dynamic, dynamic>;
+
+        return mapData.entries.map((entry) {
+          return {
+            'id': entry.key,
+            'titulo': entry.value['titulo'],
+            'urlImagen': entry.value['urlImagen'],
+            'descripcion': entry.value['descripcion'],
+          };
+        }).toList();
+      } else {
+        return [];
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> productos = [
-      {
-        "nombre": "Producto 1",
-        "descripcion": "Descripción del Producto 1.",
-        "imagen": "https://via.placeholder.com/150"
-      },
-      {
-        "nombre": "Producto 2",
-        "descripcion": "Descripción del Producto 2.",
-        "imagen": "https://via.placeholder.com/150"
-      },
-      {
-        "nombre": "Producto 3",
-        "descripcion": "Descripción del Producto 3.",
-        "imagen": "https://via.placeholder.com/150"
-      },
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -43,41 +48,71 @@ class CatalogoScreen extends StatelessWidget {
         child: SafeArea(
           child: Padding(
             padding: EdgeInsets.all(20),
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Dos columnas en el catálogo
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: productos.length,
-              itemBuilder: (context, index) {
-                final producto = productos[index];
-                return Card(
-                  color: Colors.grey[850],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+            child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: leerEnTiempoReal(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      "Error al cargar datos",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(
+                    child: Text(
+                      "No hay datos disponibles",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }
+
+                final peliculas = snapshot.data!;
+
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(15),
-                          ),
-                          child: Image.network(
-                            producto["imagen"]!,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                  itemCount: peliculas.length,
+                  itemBuilder: (context, index) {
+                    final pelicula = peliculas[index];
+                    return Card(
+                      color: Colors.grey[850],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              producto["nombre"]!,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(15),
+                              ),
+                              child: Image.network(
+                                pelicula["urlImagen"]!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Icon(
+                                      Icons.error,
+                                      color: Colors.red,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Text(
+                              pelicula["titulo"]!,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -86,95 +121,92 @@ class CatalogoScreen extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            SizedBox(height: 5),
-                            Text(
-                              producto["descripcion"]!,
-                              style: TextStyle(
-                                color: Colors.grey[300],
-                                fontSize: 14,
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              mostrarAlerta(
+                                context,
+                                "Descripción",
+                                pelicula["descripcion"]!,
+                                Icons.info,
+                                Colors.blueAccent,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                  bottom: Radius.circular(15),
+                                ),
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              padding: EdgeInsets.symmetric(vertical: 10),
                             ),
-                          ],
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Acción para ver más detalles
-                          mostrarAlerta(
-                            context,
-                            "Detalle del Producto",
-                            "Has seleccionado: ${producto["nombre"]}",
-                            Icons.info,
-                            Colors.blueAccent,
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              bottom: Radius.circular(15),
+                            child: Text(
+                              "Ver Detalles",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        child: Text(
-                          "Ver Detalles",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                          ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             ),
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => RegistroPeliculas()));
+        },
+        backgroundColor: Colors.blueAccent,
+        child: Icon(Icons.add),
+      ),
     );
   }
-}
 
-void mostrarAlerta(BuildContext context, String titulo, String mensaje,
-    IconData icono, Color colorIcono) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        backgroundColor: Colors.grey[900], // Fondo oscuro para el diálogo
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        title: Row(
-          children: [
-            Icon(icono, color: colorIcono),
-            SizedBox(width: 8),
-            Text(
-              titulo,
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+  void mostrarAlerta(BuildContext context, String titulo, String mensaje,
+      IconData icono, Color colorIcono) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Row(
+            children: [
+              Icon(icono, color: colorIcono),
+              SizedBox(width: 8),
+              Text(
+                titulo,
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            mensaje,
+            style: TextStyle(color: Colors.grey[300]),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                "Cerrar",
+                style: TextStyle(
+                    color: Colors.blueAccent, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
-        ),
-        content: Text(
-          mensaje,
-          style: TextStyle(color: Colors.grey[300]),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              "Cerrar",
-              style: TextStyle(
-                  color: Colors.blueAccent, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      );
-    },
-  );
+        );
+      },
+    );
+  }
 }
