@@ -1,6 +1,8 @@
 import 'package:app_netflix/screens/registroPeliculasScreen.dart';
+import 'package:app_netflix/screens/reproductorScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class CatalogoScreen extends StatelessWidget {
   const CatalogoScreen({super.key});
@@ -18,6 +20,7 @@ class CatalogoScreen extends StatelessWidget {
             'titulo': entry.value['titulo'],
             'urlImagen': entry.value['urlImagen'],
             'descripcion': entry.value['descripcion'],
+            'urlVideo': entry.value['urlVideo'] ?? "", // Campo URL del video
           };
         }).toList();
       } else {
@@ -130,6 +133,7 @@ class CatalogoScreen extends StatelessWidget {
                                 pelicula["descripcion"]!,
                                 Icons.info,
                                 Colors.blueAccent,
+                                pelicula["urlVideo"],
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -170,16 +174,29 @@ class CatalogoScreen extends StatelessWidget {
     );
   }
 
-  void mostrarAlerta(BuildContext context, String titulo, String mensaje,
-      IconData icono, Color colorIcono) {
+  void mostrarAlerta(BuildContext context, String titulo, String descripcion,
+      IconData icono, Color colorIcono, String videoPath) async {
+    String? videoUrl;
+
+    if (videoPath.isNotEmpty) {
+      try {
+        // Obtener la URL pública desde Firebase Storage usando la ruta relativa
+        videoUrl =
+            await FirebaseStorage.instance.ref(videoPath).getDownloadURL();
+      } catch (e) {
+        print("Error al obtener la URL del video: $e");
+        videoUrl = null;
+      }
+    }
+
+    // Mostrar la alerta
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           title: Row(
             children: [
               Icon(icono, color: colorIcono),
@@ -192,18 +209,37 @@ class CatalogoScreen extends StatelessWidget {
             ],
           ),
           content: Text(
-            mensaje,
+            descripcion,
             style: TextStyle(color: Colors.grey[300]),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
+              child: const Text(
                 "Cerrar",
-                style: TextStyle(
-                    color: Colors.blueAccent, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Colors.blueAccent),
               ),
             ),
+            if (videoUrl != null)
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReproductorScreen(
+                        videoUrl: videoUrl!, // URL obtenida desde Storage
+                        descripcion: descripcion,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.play_arrow, color: Colors.white),
+                label: const Text("Reproducir"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                ),
+              ),
           ],
         );
       },

@@ -56,8 +56,7 @@ class Cuerpo extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Image.network("https://tinypic.host/images/2024/12/05/logoP.png",
-                height: 400),
+            Image.network("https://i.imgur.com/3esoQkS.png", height: 400),
             SizedBox(height: 20),
             Text(
               "Explora un mundo de entretenimiento",
