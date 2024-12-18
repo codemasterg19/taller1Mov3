@@ -4,7 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class loginScreen extends StatelessWidget {
-  const loginScreen({super.key});
+  final bool modoOscuro;
+  final Function(bool) cambiarTema;
+
+  const loginScreen({
+    super.key,
+    required this.modoOscuro,
+    required this.cambiarTema,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,15 +22,22 @@ class loginScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "Iniciar Sesión",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: modoOscuro ? Colors.white : Colors.black,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.black,
+        backgroundColor: modoOscuro ? Colors.black : Colors.lightBlueAccent,
+        actions: [],
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.black, Colors.blueAccent],
+            colors: modoOscuro
+                ? [Colors.black, Colors.blueAccent]
+                : [Colors.lightBlueAccent, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -32,9 +46,7 @@ class loginScreen extends StatelessWidget {
           child: SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context)
-                    .size
-                    .height, // Llena todo el alto disponible
+                minHeight: MediaQuery.of(context).size.height,
               ),
               child: IntrinsicHeight(
                 child: Padding(
@@ -47,7 +59,7 @@ class loginScreen extends StatelessWidget {
                         "Bienvenido de nuevo",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: modoOscuro ? Colors.white : Colors.black,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -57,7 +69,8 @@ class loginScreen extends StatelessWidget {
                         "Inicia sesión para continuar disfrutando del mejor contenido de streaming.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.grey[300],
+                          color:
+                              modoOscuro ? Colors.grey[300] : Colors.grey[700],
                           fontSize: 16,
                           fontWeight: FontWeight.w300,
                         ),
@@ -67,9 +80,13 @@ class loginScreen extends StatelessWidget {
                         controller: _email,
                         decoration: InputDecoration(
                           hintText: "Correo Electrónico",
-                          hintStyle: TextStyle(color: Colors.grey[200]),
+                          hintStyle: TextStyle(
+                              color: modoOscuro
+                                  ? Colors.grey[200]
+                                  : Colors.grey[600]),
                           filled: true,
-                          fillColor: Colors.grey[800],
+                          fillColor:
+                              modoOscuro ? Colors.grey[800] : Colors.grey[300],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
@@ -77,7 +94,8 @@ class loginScreen extends StatelessWidget {
                           contentPadding: EdgeInsets.symmetric(
                               vertical: 15, horizontal: 20),
                         ),
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                            color: modoOscuro ? Colors.white : Colors.black),
                       ),
                       SizedBox(height: 20),
                       TextField(
@@ -85,9 +103,13 @@ class loginScreen extends StatelessWidget {
                         obscureText: true,
                         decoration: InputDecoration(
                           hintText: "Contraseña",
-                          hintStyle: TextStyle(color: Colors.grey[200]),
+                          hintStyle: TextStyle(
+                              color: modoOscuro
+                                  ? Colors.grey[200]
+                                  : Colors.grey[600]),
                           filled: true,
-                          fillColor: Colors.grey[800],
+                          fillColor:
+                              modoOscuro ? Colors.grey[800] : Colors.grey[300],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
@@ -95,14 +117,17 @@ class loginScreen extends StatelessWidget {
                           contentPadding: EdgeInsets.symmetric(
                               vertical: 15, horizontal: 20),
                         ),
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                            color: modoOscuro ? Colors.white : Colors.black),
                       ),
                       SizedBox(height: 40),
                       ElevatedButton(
                         onPressed: () =>
                             login(_email.text, _password.text, context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
+                          backgroundColor: modoOscuro
+                              ? Colors.blueAccent
+                              : Colors.lightBlueAccent,
                           padding: EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -111,9 +136,10 @@ class loginScreen extends StatelessWidget {
                         child: Text(
                           "Iniciar Sesión",
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       SizedBox(height: 20),
@@ -122,7 +148,9 @@ class loginScreen extends StatelessWidget {
                         child: Text(
                           "¿Olvidaste tu contraseña?",
                           style: TextStyle(
-                            color: const Color.fromARGB(255, 237, 239, 241),
+                            color: modoOscuro
+                                ? Colors.grey[300]
+                                : Colors.blueAccent,
                             fontSize: 16,
                           ),
                         ),
@@ -133,7 +161,9 @@ class loginScreen extends StatelessWidget {
                         child: Text(
                           "Crear una cuenta",
                           style: TextStyle(
-                            color: const Color.fromARGB(255, 234, 235, 238),
+                            color: modoOscuro
+                                ? Colors.grey[300]
+                                : Colors.blueAccent,
                             fontSize: 16,
                           ),
                         ),
@@ -148,75 +178,76 @@ class loginScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-void registro(context) {
-  Navigator.push(
-      context, MaterialPageRoute(builder: (context) => registroScreen()));
-}
-
-Future<void> login(email, pass, context) async {
-  if (email.isEmpty || pass.isEmpty) {
-    mostrarAlerta(context, "Error", "Por favor, completa todos los campos.",
-        Icons.error, Colors.red);
-    return;
-  }
-
-  try {
-    final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: email,
-      password: pass,
-    );
-
-    /* Si el inicio de sesión es exitoso
-    mostrarAlerta(
-      context,
-      "Inicio de Sesión",
-      "Has iniciado sesión correctamente.",
-      Icons.check_circle,
-      Colors.green,
-    );*/
-
+  void registro(context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CatalogoScreen()),
+      MaterialPageRoute(
+        builder: (context) => registroScreen(
+          modoOscuro: modoOscuro, // Actualiza aquí si es necesario
+          cambiarTema: cambiarTema,
+        ),
+      ),
     );
-  } on FirebaseAuthException catch (e) {
-    if (e.code == 'user-not-found') {
-      mostrarAlerta(
-        context,
-        "Error",
-        "Usuario no encontrado.",
-        Icons.error,
-        Colors.red,
+  }
+
+  Future<void> login(email, pass, context) async {
+    if (email.isEmpty || pass.isEmpty) {
+      mostrarAlerta(context, "Error", "Por favor, completa todos los campos.",
+          Icons.error, Colors.red);
+      return;
+    }
+
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: pass,
       );
-    } else if (e.code == 'wrong-password') {
-      mostrarAlerta(
+
+      Navigator.push(
         context,
-        "Error",
-        "Contraseña incorrecta.",
-        Icons.error,
-        Colors.red,
+        MaterialPageRoute(
+          builder: (context) => CatalogoScreen(
+            modoOscuro: modoOscuro, // Pasa el estado actual del tema aquí
+            cambiarTema: cambiarTema,
+          ),
+        ),
       );
-    } else {
-      // Manejo genérico de excepciones específicas de FirebaseAuth
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        mostrarAlerta(
+          context,
+          "Error",
+          "Usuario no encontrado.",
+          Icons.error,
+          Colors.red,
+        );
+      } else if (e.code == 'wrong-password') {
+        mostrarAlerta(
+          context,
+          "Error",
+          "Contraseña incorrecta.",
+          Icons.error,
+          Colors.red,
+        );
+      } else {
+        mostrarAlerta(
+          context,
+          "Error",
+          "Error de autenticación: ${e.message}",
+          Icons.error,
+          Colors.red,
+        );
+      }
+    } catch (e) {
       mostrarAlerta(
         context,
         "Error",
-        "Error de autenticación: ${e.message}",
+        "Ha ocurrido un error. Inténtalo de nuevo.",
         Icons.error,
         Colors.red,
       );
     }
-  } catch (e) {
-    // Manejo de errores generales
-    mostrarAlerta(
-      context,
-      "Error",
-      "Ha ocurrido un error. Inténtalo de nuevo.",
-      Icons.error,
-      Colors.red,
-    );
   }
 }
 
@@ -226,7 +257,7 @@ void mostrarAlerta(BuildContext context, String titulo, String mensaje,
     context: context,
     builder: (context) {
       return AlertDialog(
-        backgroundColor: Colors.grey[900], // Fondo oscuro para el diálogo
+        backgroundColor: Colors.grey[900],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
         ),

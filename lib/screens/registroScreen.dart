@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class registroScreen extends StatelessWidget {
-  const registroScreen({super.key});
+  final bool modoOscuro;
+  final Function(bool) cambiarTema;
+
+  const registroScreen({
+    super.key,
+    required this.modoOscuro,
+    required this.cambiarTema,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,15 +23,22 @@ class registroScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "Crear Cuenta",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: modoOscuro ? Colors.white : Colors.black,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.black,
+        backgroundColor: modoOscuro ? Colors.black : Colors.lightBlueAccent,
+        actions: [],
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.black, Colors.blueAccent],
+            colors: modoOscuro
+                ? [Colors.black, Colors.blueAccent]
+                : [Colors.lightBlueAccent, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -33,13 +47,12 @@ class registroScreen extends StatelessWidget {
           child: SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context)
-                    .size
-                    .height, // Llena el alto disponible
+                minHeight: MediaQuery.of(context).size.height,
               ),
               child: IntrinsicHeight(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -48,106 +61,146 @@ class registroScreen extends StatelessWidget {
                         "Únete a la mejor experiencia de streaming",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
+                          color: modoOscuro ? Colors.white : Colors.black,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Text(
                         "Crea una cuenta para acceder a contenido exclusivo.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.grey[300],
+                          color:
+                              modoOscuro ? Colors.grey[300] : Colors.grey[700],
                           fontSize: 16,
                           fontWeight: FontWeight.w300,
                         ),
                       ),
-                      SizedBox(height: 40),
+                      const SizedBox(height: 40),
                       TextField(
                         controller: _nameController,
                         decoration: InputDecoration(
                           hintText: "Nombre Completo",
-                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          hintStyle: TextStyle(
+                            color: modoOscuro
+                                ? Colors.grey[200]
+                                : Colors.grey[600],
+                          ),
                           filled: true,
-                          fillColor: Colors.grey[800],
+                          fillColor:
+                              modoOscuro ? Colors.grey[800] : Colors.grey[300],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 20),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 20,
+                          ),
                         ),
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: modoOscuro ? Colors.white : Colors.black,
+                        ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       TextField(
                         controller: _emailController,
                         decoration: InputDecoration(
                           hintText: "Correo Electrónico",
-                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          hintStyle: TextStyle(
+                            color: modoOscuro
+                                ? Colors.grey[200]
+                                : Colors.grey[600],
+                          ),
                           filled: true,
-                          fillColor: Colors.grey[800],
+                          fillColor:
+                              modoOscuro ? Colors.grey[800] : Colors.grey[300],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 20),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 20,
+                          ),
                         ),
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: modoOscuro ? Colors.white : Colors.black,
+                        ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       TextField(
                         obscureText: true,
                         controller: _passwordController,
                         decoration: InputDecoration(
                           hintText: "Contraseña",
-                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          hintStyle: TextStyle(
+                            color: modoOscuro
+                                ? Colors.grey[200]
+                                : Colors.grey[600],
+                          ),
                           filled: true,
-                          fillColor: Colors.grey[800],
+                          fillColor:
+                              modoOscuro ? Colors.grey[800] : Colors.grey[300],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 20),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 20,
+                          ),
                         ),
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: modoOscuro ? Colors.white : Colors.black,
+                        ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       TextField(
                         obscureText: true,
                         controller: _confimPasswordController,
                         decoration: InputDecoration(
                           hintText: "Confirmar Contraseña",
-                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          hintStyle: TextStyle(
+                            color: modoOscuro
+                                ? Colors.grey[200]
+                                : Colors.grey[600],
+                          ),
                           filled: true,
-                          fillColor: Colors.grey[800],
+                          fillColor:
+                              modoOscuro ? Colors.grey[800] : Colors.grey[300],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 20),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 20,
+                          ),
                         ),
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: modoOscuro ? Colors.white : Colors.black,
+                        ),
                       ),
-                      SizedBox(height: 40),
+                      const SizedBox(height: 40),
                       ElevatedButton(
                         onPressed: () => registro(
-                            _emailController.text,
-                            _passwordController.text,
-                            _confimPasswordController.text,
-                            context),
+                          _emailController.text,
+                          _passwordController.text,
+                          _confimPasswordController.text,
+                          context,
+                        ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          padding: EdgeInsets.symmetric(vertical: 15),
+                          backgroundColor: modoOscuro
+                              ? Colors.blueAccent
+                              : Colors.lightBlueAccent,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: Text(
+                        child: const Text(
                           "Registrarse",
                           style: TextStyle(
                             fontSize: 18,
@@ -156,19 +209,25 @@ class registroScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       TextButton(
                         onPressed: () {
                           Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      loginScreen())); // Regresar al login
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => loginScreen(
+                                modoOscuro: modoOscuro,
+                                cambiarTema: cambiarTema,
+                              ),
+                            ),
+                          );
                         },
                         child: Text(
                           "¿Ya tienes una cuenta? Inicia Sesión",
                           style: TextStyle(
-                            color: const Color.fromARGB(255, 251, 252, 253),
+                            color: modoOscuro
+                                ? Colors.grey[300]
+                                : Colors.blueAccent,
                             fontSize: 16,
                           ),
                         ),

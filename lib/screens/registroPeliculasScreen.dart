@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class RegistroPeliculas extends StatefulWidget {
-  const RegistroPeliculas({super.key});
+  final bool modoOscuro;
+  final Function(bool) cambiarTema;
+
+  const RegistroPeliculas({
+    super.key,
+    required this.modoOscuro,
+    required this.cambiarTema,
+  });
 
   @override
   _RegistroPeliculasState createState() => _RegistroPeliculasState();
@@ -12,6 +19,7 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
   final TextEditingController _id = TextEditingController();
   final TextEditingController _titulo = TextEditingController();
   final TextEditingController _urlImagen = TextEditingController();
+  final TextEditingController _urlVideo = TextEditingController();
   final TextEditingController _descripcion = TextEditingController();
 
   bool _isEditing = false;
@@ -46,14 +54,21 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
       appBar: AppBar(
         title: Text(
           _isEditing ? "Editar Película" : "Registro de Películas",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: widget.modoOscuro ? Colors.white : Colors.black,
+          ),
         ),
-        backgroundColor: Colors.black,
+        backgroundColor:
+            widget.modoOscuro ? Colors.black : Colors.lightBlueAccent,
+        actions: [],
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.black, Colors.blueAccent],
+            colors: widget.modoOscuro
+                ? [Colors.black, Colors.blueAccent]
+                : [Colors.lightBlueAccent, Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -76,7 +91,8 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
                             : "Añade una nueva película",
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
+                          color:
+                              widget.modoOscuro ? Colors.white : Colors.black,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
@@ -102,6 +118,12 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
                       ),
                       SizedBox(height: 20),
                       _buildTextField(
+                        controller: _urlVideo,
+                        label: "URL de Video",
+                        hint: "Ingresa el URL del video",
+                      ),
+                      SizedBox(height: 20),
+                      _buildTextField(
                         controller: _descripcion,
                         label: "Descripción",
                         hint: "Ingresa una descripción de la película",
@@ -117,6 +139,7 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
                                 _id.text,
                                 _titulo.text,
                                 _urlImagen.text,
+                                _urlVideo.text,
                                 _descripcion.text,
                               ).then((_) {
                                 _showMessage(
@@ -143,6 +166,7 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
                                 _id.text,
                                 _titulo.text,
                                 _urlImagen.text,
+                                _urlVideo.text,
                                 _descripcion.text,
                               ).then((_) {
                                 _showMessage(
@@ -165,7 +189,9 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
+                          backgroundColor: widget.modoOscuro
+                              ? Colors.blueAccent
+                              : Colors.lightBlueAccent,
                           padding: EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -184,16 +210,25 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
                       DropdownButton<String>(
                         hint: Text(
                           "Selecciona una película para editar",
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color:
+                                widget.modoOscuro ? Colors.white : Colors.black,
+                          ),
                         ),
-                        dropdownColor: Colors.grey[900],
+                        dropdownColor: widget.modoOscuro
+                            ? Colors.grey[900]
+                            : Colors.grey[300],
                         value: null,
                         items: _peliculas.map((pelicula) {
                           return DropdownMenuItem<String>(
                             value: pelicula["id"],
                             child: Text(
                               pelicula["titulo"],
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(
+                                color: widget.modoOscuro
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
                             ),
                           );
                         }).toList(),
@@ -204,6 +239,7 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
                             pelicula["id"],
                             pelicula["titulo"],
                             pelicula["urlImagen"],
+                            pelicula["urlVideo"],
                             pelicula["descripcion"],
                           );
                         },
@@ -297,18 +333,24 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
       enabled: enabled,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white),
+        labelStyle: TextStyle(
+          color: widget.modoOscuro ? Colors.white : Colors.black,
+        ),
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey[400]),
+        hintStyle: TextStyle(
+          color: widget.modoOscuro ? Colors.grey[300] : Colors.grey[600],
+        ),
         filled: true,
-        fillColor: Colors.grey[800],
+        fillColor: widget.modoOscuro ? Colors.grey[800] : Colors.grey[300],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
         ),
         contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
       ),
-      style: TextStyle(color: Colors.white),
+      style: TextStyle(
+        color: widget.modoOscuro ? Colors.white : Colors.black,
+      ),
     );
   }
 
@@ -338,6 +380,7 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
     _id.clear();
     _titulo.clear();
     _urlImagen.clear();
+    _urlVideo.clear();
     _descripcion.clear();
   }
 
@@ -371,22 +414,24 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
     );
   }
 
-  Future<void> guardar(
-      String id, String titulo, String urlImagen, String descripcion) async {
+  Future<void> guardar(String id, String titulo, String urlImagen,
+      String urlVideo, String descripcion) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref("peliculas/$id");
     await ref.set({
       "titulo": titulo,
       "urlImagen": urlImagen,
+      "urlVideo": urlVideo,
       "descripcion": descripcion,
     });
   }
 
-  Future<void> editar(
-      String id, String titulo, String urlImagen, String descripcion) async {
+  Future<void> editar(String id, String titulo, String urlImagen,
+      String urlVideo, String descripcion) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref("peliculas/$id");
     await ref.update({
       "titulo": titulo,
       "urlImagen": urlImagen,
+      "urlVideo": urlVideo,
       "descripcion": descripcion,
     });
   }
@@ -396,12 +441,13 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
     await ref.remove();
   }
 
-  void cargarDatosParaEditar(
-      String id, String titulo, String urlImagen, String descripcion) {
+  void cargarDatosParaEditar(String id, String titulo, String urlImagen,
+      String urlVideo, String descripcion) {
     setState(() {
       _id.text = id;
       _titulo.text = titulo;
       _urlImagen.text = urlImagen;
+      _urlVideo.text = urlVideo;
       _descripcion.text = descripcion;
       _isEditing = true;
     });

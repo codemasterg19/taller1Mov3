@@ -13,6 +13,7 @@ dependencies:
   firebase_storage: ^11.6.9
   flutter:
     sdk: flutter
+  image_picker: ^1.0.8
   video_player: ^2.8.1
 
 dev_dependencies:
