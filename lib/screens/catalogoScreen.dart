@@ -4,6 +4,7 @@ import 'package:app_netflix/screens/reproductorScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CatalogoScreen extends StatefulWidget {
   final bool modoOscuro;
@@ -21,10 +22,12 @@ class CatalogoScreen extends StatefulWidget {
 
 class _CatalogoScreenState extends State<CatalogoScreen> {
   late bool _modoOscuro;
+  bool _mostrarBoton = false;
 
   void initState() {
     super.initState();
     _modoOscuro = widget.modoOscuro; // Sincronizar con el estado global
+    _verificarUsuario();
   }
 
   void _toggleModoOscuro() {
@@ -32,6 +35,21 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
       _modoOscuro = !_modoOscuro; // Actualiza el estado local
     });
     widget.cambiarTema(_modoOscuro); // Actualiza el estado global
+  }
+
+  void _verificarUsuario() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null &&
+        (user.email == 'pjimenez@mail.com' ||
+            user.uid == 'wv6Jr96CCRNau63jxoRyOqkhbG73')) {
+      setState(() {
+        _mostrarBoton = true;
+      });
+    } else {
+      setState(() {
+        _mostrarBoton = false;
+      });
+    }
   }
 
   // Tema dinámico
@@ -114,7 +132,7 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => PerfilScreen(
-                    modoOscuro: widget.modoOscuro,
+                    modoOscuro: _modoOscuro,
                     cambiarTema: widget.cambiarTema,
                   ),
                 ),
@@ -276,22 +294,24 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => RegistroPeliculas(
-                modoOscuro: _modoOscuro,
-                cambiarTema: widget.cambiarTema,
-              ),
-            ),
-          );
-        },
-        backgroundColor:
-            _modoOscuro ? Colors.blueAccent : Colors.lightBlueAccent,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: _mostrarBoton
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RegistroPeliculas(
+                      modoOscuro: _modoOscuro,
+                      cambiarTema: widget.cambiarTema,
+                    ),
+                  ),
+                );
+              },
+              backgroundColor:
+                  _modoOscuro ? Colors.blueAccent : Colors.lightBlueAccent,
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 

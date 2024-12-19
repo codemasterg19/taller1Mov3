@@ -1,3 +1,4 @@
+import 'package:app_netflix/main.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -22,6 +23,7 @@ class PerfilScreen extends StatefulWidget {
 class _PerfilScreenState extends State<PerfilScreen> {
   late bool _modoOscuro;
   final _nombreController = TextEditingController();
+  final _edadController = TextEditingController();
   final _correoController = TextEditingController();
   String? _fotoPerfilUrl;
   String? _uid;
@@ -30,6 +32,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
   void initState() {
     super.initState();
     _modoOscuro = widget.modoOscuro;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.cambiarTema(_modoOscuro);
+    });
     _obtenerDatosUsuario();
   }
 
@@ -42,13 +47,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
             user.email ?? ''; // Carga el correo del usuario
 
         // Obtén los datos del usuario desde Realtime Database
-        final ref = FirebaseDatabase.instance.ref('usuarios/$_uid');
+        final ref = FirebaseDatabase.instance.ref('usuariosv/$_uid');
         final snapshot = await ref.get();
 
         if (snapshot.exists) {
           final data = snapshot.value as Map<dynamic, dynamic>;
           setState(() {
             _nombreController.text = data['nombre'] ?? '';
+            _edadController.text = data['edad'] ?? '';
             _fotoPerfilUrl = data['fotoPerfil'];
           });
         }
@@ -64,10 +70,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
     if (_uid == null) return;
 
     try {
-      final ref = FirebaseDatabase.instance.ref('usuarios/$_uid');
+      final ref = FirebaseDatabase.instance.ref('usuariosv/$_uid');
       await ref.set({
         'nombre': _nombreController.text,
         'correo': _correoController.text,
+        'edad': _edadController.text,
         'fotoPerfil': _fotoPerfilUrl,
       });
 
@@ -107,6 +114,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
+  Future<void> _cerrarSesion() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => Welcome()),
+      ); // Navega a la pantalla de bienvenida
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cerrar sesión: $e')),
+      );
+    }
+  }
+
   void _toggleModoOscuro() {
     setState(() {
       _modoOscuro = !_modoOscuro;
@@ -117,6 +138,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset:
+          true, // Ajusta el contenido cuando aparece el teclado
       appBar: AppBar(
         title: Text(
           "Perfil de Usuario",
@@ -138,71 +161,173 @@ class _PerfilScreenState extends State<PerfilScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: _cargarImagen,
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundImage: _fotoPerfilUrl != null
-                      ? NetworkImage(_fotoPerfilUrl!)
-                      : null,
-                  child: _fotoPerfilUrl == null
-                      ? Icon(
-                          Icons.camera_alt,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height,
+              ),
+              child: IntrinsicHeight(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: _cargarImagen,
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundImage: _fotoPerfilUrl != null
+                              ? NetworkImage(_fotoPerfilUrl!)
+                              : null,
+                          child: _fotoPerfilUrl == null
+                              ? Icon(
+                                  Icons.camera_alt,
+                                  color:
+                                      _modoOscuro ? Colors.white : Colors.black,
+                                  size: 40,
+                                )
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _nombreController,
+                        decoration: InputDecoration(
+                          labelText: "Nombre Completo",
+                          labelStyle: TextStyle(
+                              color: _modoOscuro ? Colors.white : Colors.black),
+                          filled: true,
+                          fillColor:
+                              _modoOscuro ? Colors.grey[800] : Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        style: TextStyle(
                           color: _modoOscuro ? Colors.white : Colors.black,
-                          size: 40,
-                        )
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _nombreController,
-                decoration: InputDecoration(
-                  labelText: "Nombre Completo",
-                  filled: true,
-                  fillColor: _modoOscuro ? Colors.grey[800] : Colors.grey[300],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _edadController,
+                        decoration: InputDecoration(
+                          labelText: "Edad",
+                          labelStyle: TextStyle(
+                              color: _modoOscuro ? Colors.white : Colors.black),
+                          filled: true,
+                          fillColor:
+                              _modoOscuro ? Colors.grey[800] : Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: _modoOscuro ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: _correoController,
+                        readOnly: true, // El correo no debe ser editable
+                        decoration: InputDecoration(
+                          labelText: "Correo Electrónico",
+                          labelStyle: TextStyle(
+                              color: _modoOscuro ? Colors.white : Colors.black),
+                          filled: true,
+                          fillColor:
+                              _modoOscuro ? Colors.grey[800] : Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: _modoOscuro ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _guardarDatos,
+                        style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.resolveWith<Color>(
+                                  (states) {
+                            if (states.contains(MaterialState.pressed)) {
+                              return _modoOscuro ? Colors.indigo : Colors.blue;
+                            }
+                            return _modoOscuro
+                                ? Colors.blueAccent
+                                : Colors.lightBlueAccent;
+                          }),
+                          padding: MaterialStateProperty.all(
+                            const EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 30),
+                          ),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              side: BorderSide(
+                                color: _modoOscuro
+                                    ? Colors.indigo
+                                    : Colors.blueAccent,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          elevation: MaterialStateProperty.all(8),
+                          shadowColor: MaterialStateProperty.all(
+                            Colors.black.withOpacity(0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.save,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 10),
+                            const Text(
+                              "Guardar Cambios",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: _cerrarSesion,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                          side: BorderSide(
+                            color: _modoOscuro ? Colors.redAccent : Colors.red,
+                            width: 2,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 25),
+                        ),
+                        child: Text(
+                          "Cerrar Sesión",
+                          style: TextStyle(
+                            color: _modoOscuro ? Colors.redAccent : Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                style: TextStyle(
-                  color: _modoOscuro ? Colors.white : Colors.black,
-                ),
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _correoController,
-                readOnly: true, // El correo no debe ser editable
-                decoration: InputDecoration(
-                  labelText: "Correo Electrónico",
-                  filled: true,
-                  fillColor: _modoOscuro ? Colors.grey[800] : Colors.grey[300],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                style: TextStyle(
-                  color: _modoOscuro ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _guardarDatos,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _modoOscuro ? Colors.blueAccent : Colors.lightBlueAccent,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                ),
-                child: const Text(
-                  "Guardar",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
