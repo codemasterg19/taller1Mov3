@@ -74,5 +74,4 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://juegomoviles-a6162-default-rtdb.firebaseio.com',
     storageBucket: 'juegomoviles-a6162.appspot.com',
   );
-
 }

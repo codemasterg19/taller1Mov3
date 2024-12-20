@@ -349,10 +349,13 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
               ),
             ],
           ),
-          content: Text(
-            descripcion,
-            style:
-                TextStyle(color: _modoOscuro ? Colors.grey[300] : Colors.black),
+          content: SingleChildScrollView(
+            child: Text(
+              descripcion,
+              style: TextStyle(
+                color: _modoOscuro ? Colors.grey[300] : Colors.black,
+              ),
+            ),
           ),
           actions: [
             TextButton(

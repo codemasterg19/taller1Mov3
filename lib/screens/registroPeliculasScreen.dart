@@ -207,42 +207,49 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
                         ),
                       ),
                       SizedBox(height: 20),
-                      DropdownButton<String>(
-                        hint: Text(
-                          "Selecciona una película para editar",
-                          style: TextStyle(
-                            color:
-                                widget.modoOscuro ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        dropdownColor: widget.modoOscuro
-                            ? Colors.grey[900]
-                            : Colors.grey[300],
-                        value: null,
-                        items: _peliculas.map((pelicula) {
-                          return DropdownMenuItem<String>(
-                            value: pelicula["id"],
-                            child: Text(
-                              pelicula["titulo"],
-                              style: TextStyle(
-                                color: widget.modoOscuro
-                                    ? Colors.white
-                                    : Colors.black,
-                              ),
+                      DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded:
+                              true, // Asegura que ocupe todo el ancho disponible
+                          menuMaxHeight:
+                              200, // Altura máxima para el menú desplegable
+                          hint: Text(
+                            "Selecciona una película para editar",
+                            style: TextStyle(
+                              color: widget.modoOscuro
+                                  ? Colors.white
+                                  : Colors.black,
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (String? id) {
-                          final pelicula =
-                              _peliculas.firstWhere((p) => p["id"] == id);
-                          cargarDatosParaEditar(
-                            pelicula["id"],
-                            pelicula["titulo"],
-                            pelicula["urlImagen"],
-                            pelicula["urlVideo"],
-                            pelicula["descripcion"],
-                          );
-                        },
+                          ),
+                          dropdownColor: widget.modoOscuro
+                              ? Colors.grey[900]
+                              : Colors.grey[100],
+                          value: null,
+                          items: _peliculas.map((pelicula) {
+                            return DropdownMenuItem<String>(
+                              value: pelicula["id"],
+                              child: Text(
+                                pelicula["titulo"],
+                                style: TextStyle(
+                                  color: widget.modoOscuro
+                                      ? Colors.white
+                                      : Colors.black,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? id) {
+                            final pelicula =
+                                _peliculas.firstWhere((p) => p["id"] == id);
+                            cargarDatosParaEditar(
+                              pelicula["id"],
+                              pelicula["titulo"],
+                              pelicula["urlImagen"],
+                              pelicula["urlVideo"],
+                              pelicula["descripcion"],
+                            );
+                          },
+                        ),
                       ),
                       if (_isEditing)
                         ElevatedButton.icon(
@@ -338,10 +345,10 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
         ),
         hintText: hint,
         hintStyle: TextStyle(
-          color: widget.modoOscuro ? Colors.grey[300] : Colors.grey[600],
+          color: widget.modoOscuro ? Colors.grey[100] : Colors.grey[600],
         ),
         filled: true,
-        fillColor: widget.modoOscuro ? Colors.grey[800] : Colors.grey[300],
+        fillColor: widget.modoOscuro ? Colors.grey[800] : Colors.grey[100],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -373,6 +380,32 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
       );
       return false;
     }
+
+    // Verifica si el código ya existe
+    if (!_isEditing &&
+        _peliculas.any((pelicula) => pelicula['id'] == id.text)) {
+      _showMessage(
+        context,
+        "Error",
+        "El código de la película ya existe. Usa otro código.",
+        Colors.red,
+      );
+      return false;
+    }
+
+    // Verifica si el título ya existe (excluye la película actual si está editando)
+    if (_peliculas.any((pelicula) =>
+        pelicula['titulo'] == titulo.text &&
+        (!_isEditing || pelicula['id'] != id.text))) {
+      _showMessage(
+        context,
+        "Error",
+        "El título de la película ya existe. Usa otro título.",
+        Colors.red,
+      );
+      return false;
+    }
+
     return true;
   }
 
@@ -416,6 +449,27 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
 
   Future<void> guardar(String id, String titulo, String urlImagen,
       String urlVideo, String descripcion) async {
+    // Validar si el ID o el título ya existen
+    if (_peliculas.any((pelicula) => pelicula['id'] == id)) {
+      _showMessage(
+        context,
+        "Error",
+        "El código de la película ya existe. Usa otro código.",
+        Colors.red,
+      );
+      return;
+    }
+
+    if (_peliculas.any((pelicula) => pelicula['titulo'] == titulo)) {
+      _showMessage(
+        context,
+        "Error",
+        "El título de la película ya existe. Usa otro título.",
+        Colors.red,
+      );
+      return;
+    }
+
     DatabaseReference ref = FirebaseDatabase.instance.ref("peliculas/$id");
     await ref.set({
       "titulo": titulo,
@@ -423,10 +477,23 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
       "urlVideo": urlVideo,
       "descripcion": descripcion,
     });
+    await _cargarPeliculas(); // Recargar las películas después de guardar
   }
 
   Future<void> editar(String id, String titulo, String urlImagen,
       String urlVideo, String descripcion) async {
+    // Validar si el título ya existe (excluyendo la película actual)
+    if (_peliculas.any(
+        (pelicula) => pelicula['titulo'] == titulo && pelicula['id'] != id)) {
+      _showMessage(
+        context,
+        "Error",
+        "El título de la película ya existe. Usa otro título.",
+        Colors.red,
+      );
+      return;
+    }
+
     DatabaseReference ref = FirebaseDatabase.instance.ref("peliculas/$id");
     await ref.update({
       "titulo": titulo,
@@ -434,6 +501,7 @@ class _RegistroPeliculasState extends State<RegistroPeliculas> {
       "urlVideo": urlVideo,
       "descripcion": descripcion,
     });
+    await _cargarPeliculas(); // Recargar las películas después de editar
   }
 
   Future<void> eliminar(String id) async {

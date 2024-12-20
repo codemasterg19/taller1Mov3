@@ -299,27 +299,29 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      ElevatedButton(
+                      TextButton.icon(
                         onPressed: _cerrarSesion,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          side: BorderSide(
-                            color: _modoOscuro ? Colors.redAccent : Colors.red,
-                            width: 2,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 25),
+                        icon: Icon(
+                          Icons.logout,
+                          color: _modoOscuro ? Colors.white : Colors.redAccent,
                         ),
-                        child: Text(
+                        label: Text(
                           "Cerrar Sesión",
                           style: TextStyle(
-                            color: _modoOscuro ? Colors.redAccent : Colors.red,
-                            fontSize: 16,
+                            color:
+                                _modoOscuro ? Colors.white : Colors.redAccent,
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 30),
+                          backgroundColor: _modoOscuro
+                              ? Colors.redAccent.withOpacity(0.2)
+                              : Colors.red.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
                           ),
                         ),
                       ),
